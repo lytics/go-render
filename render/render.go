@@ -8,8 +8,10 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 var builtinTypeMap = map[reflect.Kind]string{
@@ -45,7 +47,7 @@ var typeOfInt = reflect.TypeOf(int(1))
 var typeOfUint = reflect.TypeOf(uint(1))
 var typeOfFloat = reflect.TypeOf(10.1)
 
-// Render converts a structure to a string representation. Unline the "%#v"
+// Render converts a structure to a string representation. Unlike the "%#v"
 // format string, this resolves pointer types' contents in structs, maps, and
 // slices/arrays and prints their field values.
 func Render(v interface{}) string {
@@ -53,6 +55,30 @@ func Render(v interface{}) string {
 	s := (*traverseState)(nil)
 	s.render(&buf, 0, reflect.ValueOf(v), false)
 	return buf.String()
+}
+
+// AsCode takes the output of Render and converts to go code that can be re-used.
+// For example, main.example{Field1:"hello", Field2:(*main.InnerField){Field1:"world"}} becomes
+// example{
+//	Field1: "Hello",
+//	Field2: &InnerField{
+//		Field1:"World",
+// 	},
+// }
+func AsCode(v interface{}) string {
+	s := Render(v)
+	s = strings.Replace(s, "*", "&", -1)
+	s = strings.Replace(s, "[]&", "[]*", -1)
+
+	// remove leading package	name from output, e.g. render.testStruct{} -> testStruct{}
+	re := regexp.MustCompile(`[\w]*\.([\w]*[\{)(])`)
+	s = re.ReplaceAllString(s, "$1")
+
+	// remove extra parens wrapping types, e.g. (&map[string]int){"bar":1, "foo":0} -> &map[string]int{"bar":1, "foo":0}
+	re = regexp.MustCompile(`\(([\w\.*&\[\]]*)\){`)
+	s = re.ReplaceAllString(s, "$1{")
+
+	return s
 }
 
 // renderPointer is called to render a pointer value.

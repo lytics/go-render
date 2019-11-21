@@ -29,6 +29,14 @@ func assertRendersLike(t *testing.T, name string, v interface{}, exp string) {
 	}
 }
 
+func assertRendersAsCode(t *testing.T, name string, v interface{}, exp string) {
+	act := AsCode(v)
+	if act != exp {
+		_, _, line, _ := runtime.Caller(1)
+		t.Errorf("On line #%d, [%s] did not match expectations:\nExpected: %s\nActual  : %s\n", line, name, exp, act)
+	}
+}
+
 func TestRenderList(t *testing.T) {
 	t.Parallel()
 
@@ -115,6 +123,58 @@ func TestRenderRecursiveStruct(t *testing.T) {
 
 	assertRendersLike(t, "Recursive struct", s,
 		`(*render.testStruct){Name:"recursive", I:<REC(*render.testStruct)>}`)
+}
+
+func TestAsCode(t *testing.T) {
+	// fmt.Printf output with %#v formatting for this struct is as such:
+	// 			main.testStruct{S:"hello", V:(*map[string]int)(0x40c138), I:42, Inner:(*main.innerStruct)(0x40a0e0)}
+	// Vanilla Render output (Cannot be directly pasted as Code or a new struct):
+	// 			render.testStruct{S:"hello", V:(*map[string]int){"bar":1, "foo":0}, I:render.customType(42), Inner:(*render.innerStruct){MoreInfo:[]string{"Test", "Additional Info"}}}
+
+	type innerStruct struct {
+		MoreInfo []string
+	}
+	type customType int
+	type testStruct struct {
+		S      string
+		V      *map[string]int
+		I      interface{}
+		Inner  *innerStruct
+		Inner2 []*innerStruct
+	}
+
+	a := testStruct{
+		S: "hello",
+		V: &map[string]int{"foo": 0, "bar": 1},
+		I: customType(42),
+		Inner: &innerStruct{
+			MoreInfo: []string{"Test", "Additional Info"},
+		},
+		Inner2: []*innerStruct{
+			&innerStruct{
+				MoreInfo: []string{"Test", "Additional Info"},
+			},
+		},
+	}
+
+	assertRendersAsCode(t, "Normal Nested Struct", a,
+		`testStruct{S:"hello", V:&map[string]int{"bar":1, "foo":0}, I:customType(42), Inner:&innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}, Inner2:[]*innerStruct{&innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}}}`)
+}
+
+func TestAsCodeRecursive(t *testing.T) {
+	type testStruct struct {
+		Name string
+		I    interface{}
+	}
+
+	s := &testStruct{
+		Name: "recursive",
+	}
+	s.I = s
+	fmt.Printf("%#v", Render(s))
+
+	assertRendersAsCode(t, "Recursive struct", s,
+		`&testStruct{Name:"recursive", I:<REC(&testStruct)>}`)
 }
 
 func TestRenderRecursiveArray(t *testing.T) {
