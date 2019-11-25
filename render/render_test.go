@@ -162,7 +162,7 @@ func TestAsCode(t *testing.T) {
 	}
 
 	assertRendersAsCode(t, "Normal Nested Struct", a,
-		`render.testStruct{S:"hello", V:&map[string]int{"bar":1, "foo":0}, I:render.customType(42), InnerNil:&render.innerStruct{}, Inner:&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}, Inner2:[]*render.innerStruct{&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}}, SliceNil:[]uint8(nil)}`)
+		`render.testStruct{S:"hello", V:&map[string]int{"bar":1, "foo":0}, I:render.customType(42), InnerNil:nil, Inner:&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}, Inner2:[]*render.innerStruct{&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}}, SliceNil:[]uint8(nil)}`)
 }
 
 func TestAsCodeRecursive(t *testing.T) {

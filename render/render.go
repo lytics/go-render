@@ -64,6 +64,7 @@ func Render(v interface{}) string {
 // main.example{Field1: &render.innerStruct{}, Field2: &main.InnerField{Field1:"World"}}
 func AsCode(v interface{}) string {
 	s := Render(v)
+
 	s = strings.Replace(s, "*", "&", -1)
 	s = strings.Replace(s, "[]&", "[]*", -1)
 
@@ -71,9 +72,9 @@ func AsCode(v interface{}) string {
 	re := regexp.MustCompile(`\(([\w\.*&\[\]]*)\){`)
 	s = re.ReplaceAllString(s, "$1{")
 
-	// handle nil structs gracefully e.g. (&render.innerStruct)(nil), -> &render.innerStruct{},
-	re = regexp.MustCompile(`\(([*&\w]*.[\w]*)\)\(nil\),`)
-	s = re.ReplaceAllString(s, "$1{},")
+	// format nils as runable code e.g. (&render.innerStruct)(nil), -> nil,
+	re = regexp.MustCompile(`\([*&\w]*.[\w]*\)\(nil\),`)
+	s = re.ReplaceAllString(s, "nil,")
 
 	return s
 }
