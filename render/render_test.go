@@ -136,17 +136,20 @@ func TestAsCode(t *testing.T) {
 	}
 	type customType int
 	type testStruct struct {
-		S      string
-		V      *map[string]int
-		I      interface{}
-		Inner  *innerStruct
-		Inner2 []*innerStruct
+		S        string
+		V        *map[string]int
+		I        interface{}
+		InnerNil *innerStruct
+		Inner    *innerStruct
+		Inner2   []*innerStruct
+		SliceNil []byte
 	}
 
 	a := testStruct{
-		S: "hello",
-		V: &map[string]int{"foo": 0, "bar": 1},
-		I: customType(42),
+		S:        "hello",
+		V:        &map[string]int{"foo": 0, "bar": 1},
+		I:        customType(42),
+		InnerNil: nil,
 		Inner: &innerStruct{
 			MoreInfo: []string{"Test", "Additional Info"},
 		},
@@ -155,10 +158,11 @@ func TestAsCode(t *testing.T) {
 				MoreInfo: []string{"Test", "Additional Info"},
 			},
 		},
+		SliceNil: nil,
 	}
 
 	assertRendersAsCode(t, "Normal Nested Struct", a,
-		`render.testStruct{S:"hello", V:&map[string]int{"bar":1, "foo":0}, I:render.customType(42), Inner:&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}, Inner2:[]*render.innerStruct{&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}}}`)
+		`render.testStruct{S:"hello", V:&map[string]int{"bar":1, "foo":0}, I:render.customType(42), InnerNil:&render.innerStruct{}, Inner:&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}, Inner2:[]*render.innerStruct{&render.innerStruct{MoreInfo:[]string{"Test", "Additional Info"}}}, SliceNil:[]uint8(nil)}`)
 }
 
 func TestAsCodeRecursive(t *testing.T) {

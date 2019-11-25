@@ -57,26 +57,23 @@ func Render(v interface{}) string {
 	return buf.String()
 }
 
-// AsCode takes the output of Render and converts to go code that can be re-used.
-// For example, main.example{Field1:"hello", Field2:(*main.InnerField){Field1:"world"}} becomes
-// example{
-//	Field1: "Hello",
-//	Field2: &InnerField{
-//		Field1:"World",
-// 	},
-// }
+// AsCode takes the output of Render and converts to go code that can be re-used without modification.
+// For example:
+// main.example{Field1:(&render.innerStruct)(nil), Field2:(*main.InnerField){Field1:"world"}}
+// becomes
+// main.example{Field1: &render.innerStruct{}, Field2: &main.InnerField{Field1:"World"}}
 func AsCode(v interface{}) string {
 	s := Render(v)
 	s = strings.Replace(s, "*", "&", -1)
 	s = strings.Replace(s, "[]&", "[]*", -1)
 
-	// remove leading package	name from output, e.g. render.testStruct{} -> testStruct{}
-	// re := regexp.MustCompile(`[\w]*\.([\w]*[\{)(])`)
-	// s = re.ReplaceAllString(s, "$1")
-
 	// remove extra parens wrapping types, e.g. (&map[string]int){"bar":1, "foo":0} -> &map[string]int{"bar":1, "foo":0}
 	re := regexp.MustCompile(`\(([\w\.*&\[\]]*)\){`)
 	s = re.ReplaceAllString(s, "$1{")
+
+	// handle nil structs gracefully e.g. (&render.innerStruct)(nil), -> &render.innerStruct{},
+	re = regexp.MustCompile(`\(([*&\w]*.[\w]*)\)\(nil\),`)
+	s = re.ReplaceAllString(s, "$1{},")
 
 	return s
 }
