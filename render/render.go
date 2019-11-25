@@ -71,11 +71,11 @@ func AsCode(v interface{}) string {
 	s = strings.Replace(s, "[]&", "[]*", -1)
 
 	// remove leading package	name from output, e.g. render.testStruct{} -> testStruct{}
-	re := regexp.MustCompile(`[\w]*\.([\w]*[\{)(])`)
-	s = re.ReplaceAllString(s, "$1")
+	// re := regexp.MustCompile(`[\w]*\.([\w]*[\{)(])`)
+	// s = re.ReplaceAllString(s, "$1")
 
 	// remove extra parens wrapping types, e.g. (&map[string]int){"bar":1, "foo":0} -> &map[string]int{"bar":1, "foo":0}
-	re = regexp.MustCompile(`\(([\w\.*&\[\]]*)\){`)
+	re := regexp.MustCompile(`\(([\w\.*&\[\]]*)\){`)
 	s = re.ReplaceAllString(s, "$1{")
 
 	return s
