@@ -200,14 +200,13 @@ func (s *traverseState) render(buf *bytes.Buffer, ptrs int, v reflect.Value, imp
 		if !implicit {
 			writeType(buf, ptrs, vt)
 		}
-		anon := vt.Name() == "" && isAnon(vt.Elem())
 		buf.WriteString("{")
 		for i := 0; i < v.Len(); i++ {
 			if i > 0 {
 				buf.WriteString(", ")
 			}
 
-			s.render(buf, 0, v.Index(i), anon)
+			s.render(buf, 0, v.Index(i), true)
 		}
 		buf.WriteRune('}')
 
