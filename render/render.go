@@ -82,15 +82,17 @@ func AsCode(v interface{}) string {
 func AsPrettyCode(v interface{}) string {
 	s := AsCode(v)
 
-	re := regexp.MustCompile(`{`)
-	s = re.ReplaceAllString(s, "{\n")
-	re = regexp.MustCompile(`,`)
-	s = re.ReplaceAllString(s, ",\n")
-	re = regexp.MustCompile(`([^{])},`)
+	re := regexp.MustCompile(`([^{])},`)
 	s = re.ReplaceAllString(s, "$1,\n},")
+
 	re = regexp.MustCompile(`\{,\}`)
 	s = re.ReplaceAllString(s, "{}")
 
+	re = regexp.MustCompile(`{([^}])`)
+	s = re.ReplaceAllString(s, "{\n$1")
+
+	re = regexp.MustCompile(`,`)
+	s = re.ReplaceAllString(s, ",\n")
 	return s
 }
 
