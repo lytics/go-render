@@ -73,7 +73,7 @@ func AsCode(v interface{}) string {
 	s = re.ReplaceAllString(s, "$1{")
 
 	// format nils as runable code e.g. (&render.innerStruct)(nil), -> nil,
-	re = regexp.MustCompile(`\([*&\w]*.[\w]*\)\(nil\),`)
+	re = regexp.MustCompile(`\(&\w+.\w+\)\(nil\),`)
 	s = re.ReplaceAllString(s, "nil,")
 
 	return s
