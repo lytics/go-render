@@ -86,6 +86,8 @@ func AsPrettyCode(v interface{}) string {
 	s = re.ReplaceAllString(s, "{\n")
 	re = regexp.MustCompile(`,`)
 	s = re.ReplaceAllString(s, ",\n")
+	re = regexp.MustCompile(`},`)
+	s = re.ReplaceAllString(s, ",\n},")
 
 	return s
 }
