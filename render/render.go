@@ -79,6 +79,17 @@ func AsCode(v interface{}) string {
 	return s
 }
 
+func AsPrettyCode(v interface{}) string {
+	s := AsCode(v)
+
+	re := regexp.MustCompile(`{`)
+	s = re.ReplaceAllString(s, "{\n")
+	re = regexp.MustCompile(`,`)
+	s = re.ReplaceAllString(s, ",\n")
+
+	return s
+}
+
 // renderPointer is called to render a pointer value.
 //
 // This is overridable so that the test suite can have deterministic pointer
