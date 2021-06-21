@@ -66,7 +66,7 @@ func AsCode(v interface{}) string {
 	s := Render(v)
 
 	s = strings.Replace(s, "*", "&", -1)
-	s = strings.Replace(s, "[]&", "[]*", -1)
+	s = strings.Replace(s, "]&", "]*", -1)
 
 	// remove extra parens wrapping types, e.g. (&map[string]int){"bar":1, "foo":0} -> &map[string]int{"bar":1, "foo":0}
 	re := regexp.MustCompile(`\(([\w\.*&\[\]]*)\){`)
